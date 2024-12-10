@@ -1,4 +1,4 @@
-# Unitary_Testing
+# PyTesting
 A Python library that contains tools for unit testing.
 
 # How to use
