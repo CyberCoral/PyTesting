@@ -360,11 +360,13 @@ class UnitaryTests:
         
         # The test_results.
         test_results = UnitaryTests.TestingMethod(tests, print_ = print_)
-        print("\n",30*"-","\n")
+        if print_ == True:
+            print("\n",30*"-","\n")
         
         # The analysis results.
         test_analysis = UnitaryTests.TestingAnalysis(test_results, mode, print_ = print_, threshold = threshold)
-        print("\n",30*"-","\n")
+        if print_ == True:
+            print("\n",30*"-","\n")
         
         return test_results, test_analysis
     
