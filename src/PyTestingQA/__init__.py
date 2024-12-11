@@ -1,4 +1,4 @@
-from src.PyTesting import PyTesting
+from . import PyTesting
     
 if __name__ == "__main__":
     print("""This program alone does not do testing,
