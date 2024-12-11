@@ -4,6 +4,7 @@ A Python library that contains tools for unit testing.
 # How to install (with pip)
 Since the version 2.1, PyTesting can be installed with pip installer.
 To do that, you must type this command in your terminal:
+
 ```pip install PyTestingQA```
 
 (Do not worry about the name of the project, PyTestingQA is the PyPi's name of the project,
