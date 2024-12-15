@@ -1,16 +1,16 @@
 ###
-### Name of project: PyTesting.py (named Unitary_Testing before v2.0)
+### Name of project: PyTesting.py
 ###
 ### Author: CyberCoral
 ###
-### Description of project: It contains a custom exception,
+### Description of project: It contains two custom exceptions,
 ###                         for debugging purposes; and a class 
 ###                         with four methods, which can be used
 ###                         for unit testing in Python.
 ###
-### Date of project: 10 / December / 2024
+### Date of project: 15 / December / 2024
 ###
-### Current version: 2.0
+### Current version: 2.1
 ###
 
 class TestFailureError(Exception):
@@ -27,6 +27,19 @@ class TestFailureError(Exception):
         
     def __str__(self):
         return str(f"The tests\n({self.tests})\nhave reached the success rate of {self.success_rate:%}, but they have not achieved the threshold of {self.threshold:%}.")
+
+class CannotBeHashedError(Exception):
+    '''
+    Error raised when an object cannot be hashed
+    properly.
+    '''
+    
+    def __init__(self, obj, type_obj):
+        self.obj = obj
+        self.type_obj = type_obj
+        
+    def __str__(self):
+        return str(f"The object ({self.obj}) of type ({self.type_obj}) cannot be hashed.")
 
 class UnitaryTests:
     '''
@@ -141,11 +154,55 @@ class UnitaryTests:
             except Exception:
                 pass
             
+            # Reformats test so, in case of not being able to be 
+            # hashed of their components, try to convert to tuple
+            # by recreating the test and check if it can hash.
+            
+            # If that is possible, dummy_var is popped from locals()
+            # and the loop breaks.
+            
+            # If that is not possible, raise custom error.
+            while True:
+                try:
+                    dummy_var = {(test[0], test[1]) : 0}
+                    locals().pop("dummy_var")
+                    break
+                except TypeError:
+                    if isinstance(test[0], list) and not isinstance(test[0], tuple):
+                        if print_:
+                            print(f"test[0] ({test[0]}) is going to be converted into a tuple.")
+    
+                        test = (tuple(test[0]), test[1])
+
+                        if print_:
+                            print(f"test[0] ({test[0]}) is now a tuple.")
+                            
+                    elif isinstance(test[1], list) and not isinstance(test[1], tuple):
+                        if print_:
+                            print(f"test[1] ({test[1]}) is going to be converted into a tuple.")
+                        
+                        test = (test[0], tuple(test[1]))
+
+                        
+                        if print_:
+                            print(f"test[1] ({test[1]}) is now a tuple.")
+                        
+                    else:
+                        raise CannotBeHashedError(test, [type(i) for i in test])
+                        
+            
             # Prints the result.
             if print_ == True:
                 print("Test"+str(i)+": ", test_res[1],"\n")
                 
+            print(test, type(test), test[0], test[1])
+            
+            print({"1":test_res[0]})
+            print({(test[0], "1"):"2"})
+            print({("1", test[1]), "2"})
+                
             # Appends the result as a {key: value} to the final dictionary.
+            print({(test[0], test[1]): test_res[0]})
             test_results.update({(test[0], test[1]): test_res[0]})
             
         return test_results
