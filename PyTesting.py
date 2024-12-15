@@ -10,7 +10,7 @@
 ###
 ### Date of project: 15 / December / 2024
 ###
-### Current version: 2.1
+### Current version: 2.2.1
 ###
 
 class TestFailureError(Exception):
@@ -195,14 +195,7 @@ class UnitaryTests:
             if print_ == True:
                 print("Test"+str(i)+": ", test_res[1],"\n")
                 
-            print(test, type(test), test[0], test[1])
-            
-            print({"1":test_res[0]})
-            print({(test[0], "1"):"2"})
-            print({("1", test[1]), "2"})
-                
             # Appends the result as a {key: value} to the final dictionary.
-            print({(test[0], test[1]): test_res[0]})
             test_results.update({(test[0], test[1]): test_res[0]})
             
         return test_results
