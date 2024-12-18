@@ -10,7 +10,7 @@
 ###
 ### Date of project: 18 / December / 2024
 ###
-### Current version: 2.3
+### Current version: 2.3.1
 ###
 
 class TestFailureError(Exception):
@@ -81,12 +81,6 @@ class UnitaryTests:
         # if it's the same as expected_result.
         
         try:
-            result = scope["result"]
-        except KeyError:
-            raise KeyError("The result variable cannot be found in the given scope.\nCheck again if 'result' is defined on the scope you used.")
-        
-        
-        try:
             exec(compile(f"result = ({test_str})", "<string>","exec"),scope)
         except Exception as e:
             # It gave error, but it was expected.
@@ -96,6 +90,8 @@ class UnitaryTests:
             
             # It gave an unexpected error.
             return None, f"Test ({test_str}) has failed because it has raised an unexpected error ({e})."
+    
+        result = scope["result"]
     
         # The test was successful, without giving errors.
         if result == expected_result:
