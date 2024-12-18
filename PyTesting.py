@@ -8,9 +8,9 @@
 ###                         with four methods, which can be used
 ###                         for unit testing in Python.
 ###
-### Date of project: 15 / December / 2024
+### Date of project: 18 / December / 2024
 ###
-### Current version: 2.2.1
+### Current version: 2.3
 ###
 
 class TestFailureError(Exception):
@@ -51,7 +51,7 @@ class UnitaryTests:
     '''
     
     @staticmethod
-    def TestingResults(test_str: str, expected_result: type | None) -> tuple[bool | None, str]:
+    def TestingResults(test_str: str, expected_result: type | None, scope: dict = globals()) -> tuple[bool | None, str]:
         '''
         It executes the code and, depending of
         the result, returns:
@@ -64,17 +64,30 @@ class UnitaryTests:
         
         · None, if test_str's execution raises
         an Exception.
-        '''
         
-        # Result is used globally, so it works with exec(compile())
-        global result
+        The scope is a dictionary that
+        contains the variables,
+        functions or everything that
+        the method can use while 
+        executing the tests.
+
+        By default
+        the scope is globals().
+        '''
         
         # Executes the code and
         # assigns the result to the global variable result,
         # so it can be used later to check
         # if it's the same as expected_result.
+        
         try:
-            exec(compile(f"result = ({test_str})", "<string>","exec"),globals())
+            result = scope["result"]
+        except KeyError:
+            raise KeyError("The result variable cannot be found in the given scope.\nCheck again if 'result' is defined on the scope you used.")
+        
+        
+        try:
+            exec(compile(f"result = ({test_str})", "<string>","exec"),scope)
         except Exception as e:
             # It gave error, but it was expected.
             if expected_result == None:
@@ -93,12 +106,20 @@ class UnitaryTests:
 
     
     @staticmethod
-    def TestingMethod(tests: list, *, print_: bool = True) -> dict[tuple[str, type]: bool | None]:
+    def TestingMethod(tests: list, *, print_: bool = True, scope: dict = globals()) -> dict[tuple[str, type]: bool | None]:
         '''
         It generalizes unit testing
         by creating a template for
         making them, so it's
         easier to do.
+        
+        The scope is a dictionary that
+        contains the variables,
+        functions or everything that
+        the method can use while 
+        executing the tests. 
+        By default
+        the scope is globals().
         
         The tests must have this format:
         (test_in_str, expected_value)
@@ -137,20 +158,25 @@ class UnitaryTests:
         elif [isinstance(tests[i][0], str) for i in range(len(tests))].count(False) != 0:
             raise TypeError("The first element of any of tests' tuples must be a string.")
         
-        # Check if result variable is in globals,
-        # so it does not get manipulated in the program.
-        if "result" in globals():
-            raise Warning("The variable result, which is in globals(), will be redefined and deleted.")
-
+        # Check the scope variable.
+        if not isinstance(scope, dict):
+            raise TypeError("The scope must be a dictionary.")
+        elif len(list(scope.keys())) == 0:
+            raise IndexError("The scope must have at least one entry.")
+    
         # The test results
         test_results: dict = {}
         
         # Automatized test check
         for test, i in zip(tests, range(1,len(tests)+1)):
-            test_res = UnitaryTests.TestingResults(test[0], test[1])
+            
+            scope.update({"result":0})
+                        
+            test_res = UnitaryTests.TestingResults(test[0], test[1], scope = scope)
+            
             # Remove previous result so the variable can be used again freely.
             try:
-                globals().pop("result")
+                scope.pop("result")
             except Exception:
                 pass
             
@@ -168,6 +194,7 @@ class UnitaryTests:
                     locals().pop("dummy_var")
                     break
                 except TypeError:
+                    
                     if isinstance(test[0], list) and not isinstance(test[0], tuple):
                         if print_:
                             print(f"test[0] ({test[0]}) is going to be converted into a tuple.")
@@ -246,11 +273,13 @@ class UnitaryTests:
             raise TypeError("The mode must be a string value, it represents the function's mode.")
         elif mode not in modes:
             raise ValueError("The introduced mode is not a valid mode..")
+          
             
         if not isinstance(test_results, dict):
             raise TypeError("The test_results variable must be a dictionary,\neach item must have a str key and a value (True, False or None).")
         elif len(list(test_results.values())) == 0:
             raise IndexError("There are no entries in test_results. It is not possible to analyse an empty test_results dict properly.")
+        
         elif [isinstance(test_items[i][0], tuple) for i in range(len(test_items))].count(False) != 0:
             raise TypeError("Each of the test_results items' key must be a tuple with two values.")
         elif [len(test_items[i][0]) == 2 for i in range(len(test_items))].count(False) != 0:
@@ -260,6 +289,7 @@ class UnitaryTests:
         
         elif [test_items[i][1] in [True, False, None] for i in range(len(test_items))].count(False) != 0:
             raise TypeError("Each of the test_results items' value must be either True, False or None.")
+        
         
         if not isinstance(threshold, float):
             raise TypeError("The threshold must be a float value, which must be greater or equal than 0 but less or equal than 1.")
@@ -397,7 +427,7 @@ class UnitaryTests:
         raise IndexError("There are no more modes in this function.")
         
     @staticmethod
-    def UnitTestingAnalyze(tests: list, mode: str, *, print_: bool = True, threshold: float = 0.80) -> dict:
+    def UnitTestingAnalyze(tests: list, mode: str, *, print_: bool = True, threshold: float = 0.80, scope: dict = globals()) -> dict:
         '''
         Does Unit Testing for 
         the specified tests, then analyzes
@@ -409,7 +439,7 @@ class UnitaryTests:
         '''
         
         # The test_results.
-        test_results = UnitaryTests.TestingMethod(tests, print_ = print_)
+        test_results = UnitaryTests.TestingMethod(tests, print_ = print_, scope = scope)
         print("\n",30*"-","\n")
         
         # The analysis results.
